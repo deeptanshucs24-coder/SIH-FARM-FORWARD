@@ -40,10 +40,10 @@ window.showToast = showToast;
 
 window.publishListing = function(e) {
   e.preventDefault();
-  const crop = document.getElementById("new-crop")₹.value || "Wheat";
-  const qty = (document.getElementById("new-qty")₹.value || "400") + " " + (document.getElementById("new-unit")₹.value || "Qt");
-  const price = "₹" + parseInt(document.getElementById("new-price")₹.value || 3250).toLocaleString();
-  const location = document.getElementById("new-location")₹.value || "Indore, MP";
+  const crop = document.getElementById("new-crop").value || "Wheat";
+  const qty = (document.getElementById("new-qty").value || "400") + " " + (document.getElementById("new-unit").value || "Qt");
+  const price = "₹" + parseInt(document.getElementById("new-price").value || 3250).toLocaleString();
+  const location = document.getElementById("new-location").value || "Indore, MP";
 
   showToast(`Listing for ${crop} (${qty}) published successfully!`);
   navigate("marketplace/listings");
@@ -51,16 +51,16 @@ window.publishListing = function(e) {
 
 window.saveFinancialEntry = function(e) {
   e.preventDefault();
-  const desc = document.getElementById("fin-desc")₹.value || "New Transaction";
-  const amount = parseInt(document.getElementById("fin-amount")₹.value || 50000).toLocaleString();
+  const desc = document.getElementById("fin-desc").value || "New Transaction";
+  const amount = parseInt(document.getElementById("fin-amount").value || 50000).toLocaleString();
   showToast(`Financial entry "${desc}" (₹${amount}) saved!`);
   navigate("financials");
 };
 
 window.createShipment = function(e) {
   e.preventDefault();
-  const id = document.getElementById("ship-id")₹.value || "FF-1028";
-  const crop = document.getElementById("ship-crop")₹.value || "Wheat";
+  const id = document.getElementById("ship-id").value || "FF-1028";
+  const crop = document.getElementById("ship-crop").value || "Wheat";
   showToast(`Shipment ${id} (${crop}) created successfully!`);
   navigate("logistics");
 };
