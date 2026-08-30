@@ -1,0 +1,26 @@
+﻿/* FarmForward — Global Styles */
+
+/* Marketplace CSS compat vars */
+:root {
+  --primary: #1b4332;
+  --primary-light: #d8f3dc;
+  --on-surface: #1e293b;
+  --on-surface-variant: #64748b;
+  --outline: #e2e8f0;
+  --success: #10b981;
+  --success-bg: #d1fae5;
+  --danger: #ef4444;
+  --danger-bg: #fee2e2;
+}
+
+.bg-primary-compat { background: #1b4332; }
+.text-primary-compat, .text-primary-mkt { color: #1b4332; }
+.bg-primary-light-compat, .bg-primary-light { background: #d8f3dc; }
+.text-success { color: #10b981; }
+.bg-success-bg { background: #d1fae5; }
+.text-danger { color: #ef4444; }
+.bg-danger-bg { background: #fee2e2; }
+
+/* Hide scrollbar on page-view */
+#page-view { scrollbar-width: none; }
+#page-view::-webkit-scrollbar { display: none; }
