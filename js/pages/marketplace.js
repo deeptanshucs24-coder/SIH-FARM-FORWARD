@@ -1,4 +1,4 @@
-﻿export function render() {
+export function render() {
   return `<div class="p-8 max-w-7xl mx-auto pb-24 md:pb-8">
   <div class="mb-6">
     <h2 class="text-3xl font-bold text-on-surface mb-2">Marketplace</h2>
@@ -22,7 +22,7 @@
               <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-success-bg text-success"><i class="fa-solid fa-arrow-trend-up mr-1 text-[10px]"></i>+2.4%</span>
             </div>
             <h4 class="font-semibold text-on-surface mb-1">Wheat (Sharbati)</h4>
-            <div class="flex items-baseline gap-1 mb-3"><span class="text-2xl font-bold text-on-surface">â‚¹3,200</span><span class="text-sm text-on-surface-variant">/ Qt</span></div>
+            <div class="flex items-baseline gap-1 mb-3"><span class="text-2xl font-bold text-on-surface">₹3,200</span><span class="text-sm text-on-surface-variant">/ Qt</span></div>
             <div class="text-xs text-on-surface-variant flex items-center gap-1.5"><i class="fa-solid fa-location-dot"></i>Delhi Mandi</div>
           </div>
           <div class="bg-white p-5 rounded-2xl border border-outline hover:shadow-md transition-shadow">
@@ -31,7 +31,7 @@
               <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-danger-bg text-danger"><i class="fa-solid fa-arrow-trend-down mr-1 text-[10px]"></i>-1.2%</span>
             </div>
             <h4 class="font-semibold text-on-surface mb-1">Onion (Red)</h4>
-            <div class="flex items-baseline gap-1 mb-3"><span class="text-2xl font-bold text-on-surface">â‚¹1,850</span><span class="text-sm text-on-surface-variant">/ Qt</span></div>
+            <div class="flex items-baseline gap-1 mb-3"><span class="text-2xl font-bold text-on-surface">₹1,850</span><span class="text-sm text-on-surface-variant">/ Qt</span></div>
             <div class="text-xs text-on-surface-variant flex items-center gap-1.5"><i class="fa-solid fa-location-dot"></i>Nashik Mandi</div>
           </div>
           <div class="bg-white p-5 rounded-2xl border border-outline hover:shadow-md transition-shadow">
@@ -40,7 +40,7 @@
               <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-success-bg text-success"><i class="fa-solid fa-arrow-trend-up mr-1 text-[10px]"></i>+5.1%</span>
             </div>
             <h4 class="font-semibold text-on-surface mb-1">Tomato (Hybrid)</h4>
-            <div class="flex items-baseline gap-1 mb-3"><span class="text-2xl font-bold text-on-surface">â‚¹2,100</span><span class="text-sm text-on-surface-variant">/ Qt</span></div>
+            <div class="flex items-baseline gap-1 mb-3"><span class="text-2xl font-bold text-on-surface">₹2,100</span><span class="text-sm text-on-surface-variant">/ Qt</span></div>
             <div class="text-xs text-on-surface-variant flex items-center gap-1.5"><i class="fa-solid fa-location-dot"></i>Pune Mandi</div>
           </div>
         </div>
@@ -62,23 +62,23 @@
             <tbody class="divide-y divide-outline">
               <tr class="hover:bg-surface/30 transition-colors">
                 <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-xs">AL</div><div><div class="font-semibold text-on-surface">AgriCorp Ltd</div><div class="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5"><i class="fa-solid fa-circle-check text-success text-[10px]"></i>Verified Buyer</div></div></div></td>
-                <td class="px-6 py-4 text-sm"><div class="text-on-surface font-medium">Soybean â€¢ 500 MT</div></td>
+                <td class="px-6 py-4 text-sm"><div class="text-on-surface font-medium">Soybean • 500 MT</div></td>
                 <td class="px-6 py-4 text-sm text-on-surface-variant">Indore, MP</td>
-                <td class="px-6 py-4 text-sm font-semibold text-on-surface">â‚¹4,850 <span class="font-normal text-on-surface-variant text-xs">/ Qt</span></td>
+                <td class="px-6 py-4 text-sm font-semibold text-on-surface">₹4,850 <span class="font-normal text-on-surface-variant text-xs">/ Qt</span></td>
                 <td class="px-6 py-4 text-right"><button class="px-4 py-1.5 bg-primary-light text-primary font-medium rounded-lg hover:bg-primary-light/80 transition-colors text-sm" onclick="navigate('marketplace/buyer')">Negotiate</button></td>
               </tr>
               <tr class="hover:bg-surface/30 transition-colors">
                 <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">HF</div><div><div class="font-semibold text-on-surface">Heritage Foods</div><div class="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5"><i class="fa-solid fa-circle-check text-success text-[10px]"></i>Verified Buyer</div></div></div></td>
-                <td class="px-6 py-4 text-sm"><div class="text-on-surface font-medium">Maize â€¢ 200 MT</div></td>
+                <td class="px-6 py-4 text-sm"><div class="text-on-surface font-medium">Maize • 200 MT</div></td>
                 <td class="px-6 py-4 text-sm text-on-surface-variant">Jaipur, RJ</td>
-                <td class="px-6 py-4 text-sm font-semibold text-on-surface">â‚¹2,250 <span class="font-normal text-on-surface-variant text-xs">/ Qt</span></td>
+                <td class="px-6 py-4 text-sm font-semibold text-on-surface">₹2,250 <span class="font-normal text-on-surface-variant text-xs">/ Qt</span></td>
                 <td class="px-6 py-4 text-right"><button class="px-4 py-1.5 bg-primary-light text-primary font-medium rounded-lg hover:bg-primary-light/80 transition-colors text-sm" onclick="navigate('marketplace/buyer')">Negotiate</button></td>
               </tr>
               <tr class="hover:bg-surface/30 transition-colors">
                 <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-xs">GM</div><div><div class="font-semibold text-on-surface">GreenLeaf Mills</div><div class="text-xs text-on-surface-variant mt-0.5">Standard Buyer</div></div></div></td>
-                <td class="px-6 py-4 text-sm"><div class="text-on-surface font-medium">Cotton â€¢ 150 Bales</div></td>
+                <td class="px-6 py-4 text-sm"><div class="text-on-surface font-medium">Cotton • 150 Bales</div></td>
                 <td class="px-6 py-4 text-sm text-on-surface-variant">Ahmedabad, GJ</td>
-                <td class="px-6 py-4 text-sm font-semibold text-on-surface">â‚¹7,100 <span class="font-normal text-on-surface-variant text-xs">/ Qt</span></td>
+                <td class="px-6 py-4 text-sm font-semibold text-on-surface">₹7,100 <span class="font-normal text-on-surface-variant text-xs">/ Qt</span></td>
                 <td class="px-6 py-4 text-right"><button class="px-4 py-1.5 bg-primary-light text-primary font-medium rounded-lg hover:bg-primary-light/80 transition-colors text-sm" onclick="navigate('marketplace/buyer')">Negotiate</button></td>
               </tr>
             </tbody>
@@ -104,15 +104,15 @@
         <div class="space-y-4">
           <div class="flex items-center justify-between p-2 -mx-2 rounded-xl hover:bg-surface transition-colors">
             <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-primary-light/50 flex items-center justify-center text-primary"><i class="fa-solid fa-cloud"></i></div><div><div class="font-semibold text-on-surface">Cotton</div><div class="text-xs text-on-surface-variant">High Export Demand</div></div></div>
-            <div class="text-right"><div class="font-bold text-on-surface">â‚¹7,250</div><div class="text-xs font-semibold text-success flex items-center justify-end gap-1"><i class="fa-solid fa-arrow-up text-[10px]"></i>8.0%</div></div>
+            <div class="text-right"><div class="font-bold text-on-surface">₹7,250</div><div class="text-xs font-semibold text-success flex items-center justify-end gap-1"><i class="fa-solid fa-arrow-up text-[10px]"></i>8.0%</div></div>
           </div>
           <div class="flex items-center justify-between p-2 -mx-2 rounded-xl hover:bg-surface transition-colors">
             <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-primary-light/50 flex items-center justify-center text-primary"><i class="fa-solid fa-seedling"></i></div><div><div class="font-semibold text-on-surface">Soybean</div><div class="text-xs text-on-surface-variant">Oil Extraction Surge</div></div></div>
-            <div class="text-right"><div class="font-bold text-on-surface">â‚¹4,900</div><div class="text-xs font-semibold text-success flex items-center justify-end gap-1"><i class="fa-solid fa-arrow-up text-[10px]"></i>4.5%</div></div>
+            <div class="text-right"><div class="font-bold text-on-surface">₹4,900</div><div class="text-xs font-semibold text-success flex items-center justify-end gap-1"><i class="fa-solid fa-arrow-up text-[10px]"></i>4.5%</div></div>
           </div>
           <div class="flex items-center justify-between p-2 -mx-2 rounded-xl hover:bg-surface transition-colors">
             <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-primary-light/50 flex items-center justify-center text-primary"><i class="fa-solid fa-droplet"></i></div><div><div class="font-semibold text-on-surface">Mustard Seed</div><div class="text-xs text-on-surface-variant">Seasonal Shift</div></div></div>
-            <div class="text-right"><div class="font-bold text-on-surface">â‚¹5,400</div><div class="text-xs font-semibold text-success flex items-center justify-end gap-1"><i class="fa-solid fa-arrow-up text-[10px]"></i>3.2%</div></div>
+            <div class="text-right"><div class="font-bold text-on-surface">₹5,400</div><div class="text-xs font-semibold text-success flex items-center justify-end gap-1"><i class="fa-solid fa-arrow-up text-[10px]"></i>3.2%</div></div>
           </div>
         </div>
       </div>

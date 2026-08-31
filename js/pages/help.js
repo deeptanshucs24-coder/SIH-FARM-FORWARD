@@ -1,4 +1,4 @@
-﻿export function render() {
+export function render() {
   return `<div class="p-margin max-w-7xl mx-auto pb-24 md:pb-margin">
   <div class="mb-xl">
     <h1 class="font-headline-lg text-headline-lg text-primary font-bold">Help &amp; Support</h1>
@@ -39,7 +39,7 @@
       
       <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm">
         <h4 class="font-body-md font-bold text-on-surface mb-xs">How do I list my produce on FarmForward Marketplace?</h4>
-        <p class="font-body-sm text-on-surface-variant leading-relaxed">Navigate to Marketplace â†’ Active Listings and click "New Listing". Enter your crop variety, quantity, asking price, and location. Verified buyers across nearby mandis will be notified instantly.</p>
+        <p class="font-body-sm text-on-surface-variant leading-relaxed">Navigate to Marketplace → Active Listings and click "New Listing". Enter your crop variety, quantity, asking price, and location. Verified buyers across nearby mandis will be notified instantly.</p>
       </div>
 
       <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm">

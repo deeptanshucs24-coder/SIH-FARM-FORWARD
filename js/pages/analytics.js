@@ -1,4 +1,4 @@
-﻿export function render() {
+export function render() {
   return `<div class="p-margin max-w-7xl mx-auto pb-24 md:pb-margin">
   <div class="mb-xl">
     <h1 class="font-headline-xl text-headline-xl text-on-surface mb-sm">Analytics</h1>
@@ -7,16 +7,16 @@
   <!-- KPI Cards -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-xl">
     <div class="bg-surface-container-lowest border border-outline-variant rounded-[12px] p-md flex flex-col gap-sm shadow-[0_2px_4px_rgba(0,0,0,0.05)]"><span class="font-label-md text-label-md text-on-surface-variant uppercase">Total Yield</span><div class="flex items-end justify-between"><span class="font-headline-lg text-headline-lg text-on-surface">1,840 Qt</span><div class="flex items-center gap-xs text-primary bg-secondary-container px-2 py-1 rounded-sm font-label-md"><span class="material-symbols-outlined text-[16px]">arrow_upward</span><span>8.6%</span></div></div><span class="font-body-sm text-body-sm text-on-surface-variant">vs last season</span></div>
-    <div class="bg-surface-container-lowest border border-outline-variant rounded-[12px] p-md flex flex-col gap-sm shadow-[0_2px_4px_rgba(0,0,0,0.05)]"><span class="font-label-md text-label-md text-on-surface-variant uppercase">Avg Selling Price</span><div class="flex items-end justify-between"><span class="font-headline-lg text-headline-lg text-on-surface">â‚¹3,420 / Qt</span><div class="flex items-center gap-xs text-primary bg-secondary-container px-2 py-1 rounded-sm font-label-md"><span class="material-symbols-outlined text-[16px]">arrow_upward</span><span>11.2%</span></div></div><span class="font-body-sm text-body-sm text-on-surface-variant">vs last season</span></div>
-    <div class="bg-surface-container-lowest border border-outline-variant rounded-[12px] p-md flex flex-col gap-sm shadow-[0_2px_4px_rgba(0,0,0,0.05)]"><span class="font-label-md text-label-md text-on-surface-variant uppercase">Net Profit</span><div class="flex items-end justify-between"><span class="font-headline-lg text-headline-lg text-on-surface">â‚¹15,77,500</span><div class="flex items-center gap-xs text-primary bg-secondary-container px-2 py-1 rounded-sm font-label-md"><span class="material-symbols-outlined text-[16px]">arrow_upward</span><span>18.1%</span></div></div><span class="font-body-sm text-body-sm text-on-surface-variant">vs last season</span></div>
-    <div class="bg-surface-container-lowest border border-outline-variant rounded-[12px] p-md flex flex-col gap-sm shadow-[0_2px_4px_rgba(0,0,0,0.05)]"><span class="font-label-md text-label-md text-on-surface-variant uppercase">Best Performing Crop</span><div class="flex items-end justify-between"><span class="font-headline-lg text-headline-lg text-on-surface">Wheat</span></div><span class="font-body-sm text-body-sm text-primary font-medium">â‚¹7,85,000 profit</span></div>
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-[12px] p-md flex flex-col gap-sm shadow-[0_2px_4px_rgba(0,0,0,0.05)]"><span class="font-label-md text-label-md text-on-surface-variant uppercase">Avg Selling Price</span><div class="flex items-end justify-between"><span class="font-headline-lg text-headline-lg text-on-surface">₹3,420 / Qt</span><div class="flex items-center gap-xs text-primary bg-secondary-container px-2 py-1 rounded-sm font-label-md"><span class="material-symbols-outlined text-[16px]">arrow_upward</span><span>11.2%</span></div></div><span class="font-body-sm text-body-sm text-on-surface-variant">vs last season</span></div>
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-[12px] p-md flex flex-col gap-sm shadow-[0_2px_4px_rgba(0,0,0,0.05)]"><span class="font-label-md text-label-md text-on-surface-variant uppercase">Net Profit</span><div class="flex items-end justify-between"><span class="font-headline-lg text-headline-lg text-on-surface">₹15,77,500</span><div class="flex items-center gap-xs text-primary bg-secondary-container px-2 py-1 rounded-sm font-label-md"><span class="material-symbols-outlined text-[16px]">arrow_upward</span><span>18.1%</span></div></div><span class="font-body-sm text-body-sm text-on-surface-variant">vs last season</span></div>
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-[12px] p-md flex flex-col gap-sm shadow-[0_2px_4px_rgba(0,0,0,0.05)]"><span class="font-label-md text-label-md text-on-surface-variant uppercase">Best Performing Crop</span><div class="flex items-end justify-between"><span class="font-headline-lg text-headline-lg text-on-surface">Wheat</span></div><span class="font-body-sm text-body-sm text-primary font-medium">₹7,85,000 profit</span></div>
   </div>
   <!-- Bento Grid -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter mb-xl">
     <!-- Crop Performance Chart -->
     <div class="lg:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-[12px] p-lg shadow-[0_2px_4px_rgba(0,0,0,0.05)] flex flex-col">
       <div class="flex items-center justify-between mb-md">
-        <h2 class="font-headline-md text-headline-md text-on-surface">Crop Performance (Qt &amp; â‚¹ Lakhs)</h2>
+        <h2 class="font-headline-md text-headline-md text-on-surface">Crop Performance (Qt &amp; ₹ Lakhs)</h2>
         <div class="flex gap-md font-label-md text-label-md">
           <div class="flex items-center gap-xs"><div class="w-3 h-3 bg-secondary-fixed"></div>Yield</div>
           <div class="flex items-center gap-xs"><div class="w-3 h-3 bg-tertiary-container"></div>Revenue</div>
@@ -35,8 +35,8 @@
         <div class="flex flex-col items-center gap-2 w-1/4 z-10">
           <div class="flex items-end gap-1 w-full justify-center" style="height:200px">
             <div class="w-6 bg-secondary-fixed rounded-t-sm" style="height:100%" title="Yield 620 Qt"></div>
-            <div class="w-6 bg-tertiary-container rounded-t-sm" style="height:80%" title="Revenue â‚¹6.8L"></div>
-            <div class="w-6 bg-primary-container rounded-t-sm" style="height:60%" title="Profit â‚¹4.1L"></div>
+            <div class="w-6 bg-tertiary-container rounded-t-sm" style="height:80%" title="Revenue ₹6.8L"></div>
+            <div class="w-6 bg-primary-container rounded-t-sm" style="height:60%" title="Profit ₹4.1L"></div>
           </div>
           <span class="font-label-md text-label-md text-on-surface">Wheat</span>
         </div>
@@ -74,7 +74,7 @@
       <div class="bg-primary-container text-on-primary-container p-lg rounded-[12px] flex flex-col gap-md shadow-[0_2px_4px_rgba(0,0,0,0.05)] relative overflow-hidden">
         <div class="absolute -right-10 -top-10 text-tertiary-container opacity-20 pointer-events-none"><span class="material-symbols-outlined text-[120px]">smart_toy</span></div>
         <div class="flex items-center gap-sm relative z-10"><span class="material-symbols-outlined text-secondary-fixed">tips_and_updates</span><h3 class="font-headline-md text-headline-md font-bold text-on-primary">AI Market Insight</h3></div>
-        <p class="font-body-md text-body-md text-on-primary-container relative z-10 leading-relaxed">"Wheat prices are trending upward across Delhi and Indore mandis. Selling within the next 5â€“7 days may improve expected returns."</p>
+        <p class="font-body-md text-body-md text-on-primary-container relative z-10 leading-relaxed">"Wheat prices are trending upward across Delhi and Indore mandis. Selling within the next 5–7 days may improve expected returns."</p>
         <button class="bg-secondary-fixed text-primary font-label-md text-label-md py-sm px-md rounded-md hover:bg-secondary-fixed-dim transition-colors w-fit mt-sm relative z-10 font-bold uppercase tracking-wider" onclick="navigate('marketplace/wheat')">View Recommendation</button>
       </div>
       <div class="bg-surface-container-lowest border border-outline-variant rounded-[12px] p-lg flex-1 flex flex-col gap-md shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
@@ -91,7 +91,7 @@
     <!-- Market Price Trends SVG -->
     <div class="bg-surface-container-lowest border border-outline-variant rounded-[12px] p-lg shadow-[0_2px_4px_rgba(0,0,0,0.05)] flex flex-col">
       <div class="flex items-center justify-between mb-md">
-        <h2 class="font-headline-md text-headline-md text-on-surface">Market Price Trends (Jan â€“ Jun)</h2>
+        <h2 class="font-headline-md text-headline-md text-on-surface">Market Price Trends (Jan – Jun)</h2>
         <div class="flex gap-md font-label-md text-label-md">
           <div class="flex items-center gap-xs"><div class="w-3 h-1 bg-primary-container rounded-sm"></div>Wheat</div>
           <div class="flex items-center gap-xs"><div class="w-3 h-1 bg-tertiary-container rounded-sm"></div>Soybean</div>

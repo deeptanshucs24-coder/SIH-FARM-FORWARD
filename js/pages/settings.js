@@ -1,4 +1,4 @@
-﻿export function render() {
+export function render() {
   return `<div class="p-margin max-w-4xl mx-auto pb-24 md:pb-margin">
   <div class="mb-xl">
     <h1 class="font-headline-lg text-headline-lg text-primary font-bold">Settings</h1>
@@ -36,7 +36,7 @@
     <div class="space-y-lg">
       <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col gap-md shadow-sm">
         <h3 class="font-headline-md text-headline-md text-primary font-bold">App Settings</h3>
-        <div class="flex flex-col gap-xs"><label class="font-label-md text-label-md text-on-surface-variant uppercase">Language</label><select class="px-md py-sm bg-surface border border-outline-variant rounded-lg font-body-sm focus:outline-none"><option selected>English</option><option>à¤¹à¤¿à¤¨à¥à¤¦à¥€</option><option>à¤®à¤°à¤¾à¤ à¥€</option></select></div>
+        <div class="flex flex-col gap-xs"><label class="font-label-md text-label-md text-on-surface-variant uppercase">Language</label><select class="px-md py-sm bg-surface border border-outline-variant rounded-lg font-body-sm focus:outline-none"><option selected>English</option><option>हिन्दी</option><option>मराठी</option></select></div>
         <div class="flex flex-col gap-xs pt-sm border-t border-outline-variant/30">
           <label class="font-label-md text-label-md text-on-surface-variant uppercase mb-xs">Notifications</label>
           <div class="flex items-center justify-between py-xs"><span class="font-body-sm text-on-surface">SMS Price Alerts</span><input checked class="rounded text-primary w-4 h-4" type="checkbox"></div>

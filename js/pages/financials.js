@@ -17,8 +17,7 @@ export function render() {
       ? "bg-secondary-container text-on-secondary-container" 
       : "bg-surface-variant text-on-surface-variant";
     
-    // Normalize Rupee symbol representation
-    const amountDisplay = item.amount.replace("â‚¹", "₹");
+    const amountDisplay = item.amount;
     const statusDisplay = item.status;
     
     return `

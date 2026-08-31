@@ -1,4 +1,4 @@
-﻿export function render() {
+export function render() {
   return `<div class="p-margin max-w-7xl mx-auto pb-24 md:pb-margin">
   <header class="mb-xl">
     <h1 class="font-headline-lg text-headline-lg text-primary">Dashboard</h1>
@@ -11,7 +11,7 @@
         <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Yield Value</span>
         <span class="material-symbols-outlined text-surface-tint">account_balance_wallet</span>
       </div>
-      <div class="font-headline-xl text-headline-xl text-primary font-bold">â‚¹24,50,000</div>
+      <div class="font-headline-xl text-headline-xl text-primary font-bold">₹24,50,000</div>
       <div class="font-body-sm text-body-sm text-surface-tint flex items-center gap-xs font-semibold">
         <span class="material-symbols-outlined text-[16px]">trending_up</span>+12% vs last month
       </div>
@@ -97,21 +97,21 @@
                 <td class="py-3 px-2 font-body-sm font-semibold text-on-surface">Wheat (Sharbati)</td>
                 <td class="py-3 px-2 font-body-sm text-on-surface-variant">Delhi Mandi</td>
                 <td class="py-3 px-2 font-body-sm text-on-surface-variant">500 Qt</td>
-                <td class="py-3 px-2 font-body-sm font-bold text-primary text-right">â‚¹16,00,000</td>
+                <td class="py-3 px-2 font-body-sm font-bold text-primary text-right">₹16,00,000</td>
                 <td class="py-3 px-2 text-right"><span class="inline-flex px-2 py-1 rounded-full text-xs font-semibold bg-secondary-container text-on-secondary-container">Completed</span></td>
               </tr>
               <tr class="border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors">
                 <td class="py-3 px-2 font-body-sm font-semibold text-on-surface">Tomato (Hybrid)</td>
                 <td class="py-3 px-2 font-body-sm text-on-surface-variant">Pune Mandi</td>
                 <td class="py-3 px-2 font-body-sm text-on-surface-variant">120 Qt</td>
-                <td class="py-3 px-2 font-body-sm font-bold text-primary text-right">â‚¹2,52,000</td>
+                <td class="py-3 px-2 font-body-sm font-bold text-primary text-right">₹2,52,000</td>
                 <td class="py-3 px-2 text-right"><span class="inline-flex px-2 py-1 rounded-full text-xs font-semibold bg-surface-variant text-on-surface-variant">In Transit</span></td>
               </tr>
               <tr class="hover:bg-surface-container-low transition-colors">
                 <td class="py-3 px-2 font-body-sm font-semibold text-on-surface">Soybean</td>
                 <td class="py-3 px-2 font-body-sm text-on-surface-variant">Indore Mandi</td>
                 <td class="py-3 px-2 font-body-sm text-on-surface-variant">300 Qt</td>
-                <td class="py-3 px-2 font-body-sm font-bold text-primary text-right">â‚¹14,55,000</td>
+                <td class="py-3 px-2 font-body-sm font-bold text-primary text-right">₹14,55,000</td>
                 <td class="py-3 px-2 text-right"><span class="inline-flex px-2 py-1 rounded-full text-xs font-semibold bg-surface-variant text-on-surface-variant">Pending</span></td>
               </tr>
             </tbody>
@@ -126,7 +126,7 @@
           <span class="material-symbols-outlined text-primary-fixed">lightbulb</span>
           <h3 class="font-headline-md text-headline-md font-bold text-primary-fixed">Recommendation</h3>
         </div>
-        <p class="font-body-md text-body-md text-primary-fixed-dim">Sell <strong class="text-primary-fixed">Wheat</strong> now in Delhi for peak price. Expected upside â‚¹120â€“150/Qt.</p>
+        <p class="font-body-md text-body-md text-primary-fixed-dim">Sell <strong class="text-primary-fixed">Wheat</strong> now in Delhi for peak price. Expected upside ₹120–150/Qt.</p>
         <button class="mt-xs bg-primary-fixed text-on-primary-fixed font-label-md text-label-md py-sm px-md rounded-lg self-start hover:bg-primary-fixed-dim transition-colors" onclick="navigate('marketplace')">Take Action</button>
       </div>
       <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col gap-md shadow-sm flex-1">
@@ -141,8 +141,8 @@
               <div class="font-label-md text-label-md text-on-surface-variant mt-xs">Delhi Mandi</div>
             </div>
             <div>
-              <div class="font-body-md font-bold text-primary text-right">â‚¹3,200</div>
-              <div class="text-xs font-semibold text-green-600 text-right">â†‘ 2.4%</div>
+              <div class="font-body-md font-bold text-primary text-right">₹3,200</div>
+              <div class="text-xs font-semibold text-green-600 text-right">↑ 2.4%</div>
             </div>
           </div>
           <div class="flex justify-between items-center py-md border-b border-outline-variant/50">
@@ -151,8 +151,8 @@
               <div class="font-label-md text-label-md text-on-surface-variant mt-xs">Nashik Mandi</div>
             </div>
             <div>
-              <div class="font-body-md font-bold text-primary text-right">â‚¹1,850</div>
-              <div class="text-xs font-semibold text-red-500 text-right">â†“ 1.2%</div>
+              <div class="font-body-md font-bold text-primary text-right">₹1,850</div>
+              <div class="text-xs font-semibold text-red-500 text-right">↓ 1.2%</div>
             </div>
           </div>
           <div class="flex justify-between items-center py-md">
@@ -161,8 +161,8 @@
               <div class="font-label-md text-label-md text-on-surface-variant mt-xs">Pune Mandi</div>
             </div>
             <div>
-              <div class="font-body-md font-bold text-primary text-right">â‚¹2,100</div>
-              <div class="text-xs font-semibold text-green-600 text-right">â†‘ 5.1%</div>
+              <div class="font-body-md font-bold text-primary text-right">₹2,100</div>
+              <div class="text-xs font-semibold text-green-600 text-right">↑ 5.1%</div>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-﻿export function render() {
+export function render() {
   return `<div class="p-margin max-w-4xl mx-auto pb-24 md:pb-margin">
   <a class="text-primary hover:underline text-sm font-medium flex items-center mb-md cursor-pointer" onclick="navigate('financials')">
     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>Back to Financials
@@ -28,7 +28,7 @@
         </select>
       </div>
       <div class="flex flex-col gap-xs">
-        <label class="font-label-md text-label-md text-on-surface-variant uppercase font-semibold">Amount (â‚¹) *</label>
+        <label class="font-label-md text-label-md text-on-surface-variant uppercase font-semibold">Amount (₹) *</label>
         <input id="fin-amount" type="number" required placeholder="e.g. 85000" class="px-md py-sm bg-surface border border-outline-variant rounded-lg font-body-sm focus:outline-none focus:border-primary-container">
       </div>
       <div class="flex flex-col gap-xs sm:col-span-2">

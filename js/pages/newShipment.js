@@ -50,7 +50,7 @@ export function render() {
       </div>
       <div class="flex flex-col gap-xs sm:col-span-2">
         <label class="font-label-md text-label-md text-on-surface-variant uppercase font-semibold">Vehicle &amp; Transport Details</label>
-        <input id="ship-vehicle" type="text" placeholder="e.g. 10-Ton Truck MP-09-AB-4567 Â· Driver: Suresh Sharma (+91 98260 11223)" class="px-md py-sm bg-surface border border-outline-variant rounded-lg font-body-sm focus:outline-none focus:border-primary-container">
+        <input id="ship-vehicle" type="text" placeholder="e.g. 10-Ton Truck MP-09-AB-4567 · Driver: Suresh Sharma (+91 98260 11223)" class="px-md py-sm bg-surface border border-outline-variant rounded-lg font-body-sm focus:outline-none focus:border-primary-container">
       </div>
     </div>
     <div class="flex items-center justify-end gap-md border-t border-outline-variant/40 pt-md mt-sm">
