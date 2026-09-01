@@ -1,25 +1,24 @@
-from sqlalchemy import Column, Integer, ForeignKey, Numeric, Date, DateTime, func, Index, UniqueConstraint, CheckConstraint
+import uuid
+from sqlalchemy import Column, String, Float, Date, ForeignKey, Index
 from app.core.database import Base
+from app.core.types import GUID
 
 
 class MarketPrice(Base):
-    """Matches FarmForward_Database_Schema section 2.6. Historical - never overwritten,
-    one row per (market, crop, date)."""
+    """Matches M3's schema.sql exactly: market_prices table.
+    A single price_per_quintal value - NOT min/max/average. No unique
+    constraint on (market, crop, date) in M3's real DDL, so duplicate rows
+    for the same day are technically possible (M3's ingestion script is
+    expected to avoid this, but we don't enforce it at the DB level since
+    M3's schema doesn't)."""
     __tablename__ = "market_prices"
 
-    price_id = Column(Integer, primary_key=True, autoincrement=True)
-    market_id = Column(Integer, ForeignKey("markets.market_id"), nullable=False, index=True)
-    crop_id = Column(Integer, ForeignKey("crops.crop_id"), nullable=False, index=True)
-    price_date = Column(Date, nullable=False)
-    min_price = Column(Numeric(12, 2), nullable=False)
-    max_price = Column(Numeric(12, 2), nullable=False)
-    average_price = Column(Numeric(12, 2), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    market_id = Column(GUID(), ForeignKey("markets.id", ondelete="CASCADE"), nullable=False, index=True)
+    crop_name = Column(String(80), nullable=False, index=True)
+    price_per_quintal = Column(Float, nullable=False)
+    date = Column(Date, nullable=False)
 
     __table_args__ = (
-        UniqueConstraint("market_id", "crop_id", "price_date", name="uq_market_crop_date"),
-        CheckConstraint("min_price <= average_price", name="ck_min_le_avg"),
-        CheckConstraint("average_price <= max_price", name="ck_avg_le_max"),
-        Index("ix_prices_crop_date", "crop_id", "price_date"),
-        Index("ix_prices_market_crop_date", "market_id", "crop_id", "price_date"),
+        Index("idx_market_prices_lookup", "crop_name", "market_id", "date"),
     )

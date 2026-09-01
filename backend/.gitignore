@@ -9,7 +9,7 @@ venv/
 env/
 .venv/
 
-# Environment / secrets - never commit real credentials
+# Environment / secrets
 .env
 
 # Databases (local/dev only)

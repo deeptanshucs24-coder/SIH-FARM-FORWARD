@@ -1,18 +1,19 @@
+import uuid
 from typing import Optional
 from pydantic import BaseModel, Field, ConfigDict
 
 
 class UserRegister(BaseModel):
     name: str
-    # Digits only, 10-15 chars - matches the project's phone-as-identifier convention.
     phone: str = Field(..., pattern=r"^[0-9]{10,15}$")
     password: str = Field(..., min_length=6)
-    # ADMIN is intentionally excluded here - public self-registration must not
-    # allow arbitrary admin creation (flagged by team review). Admin accounts
-    # are created via scripts/create_admin.py until the team decides on a
-    # proper admin workflow - see README "Flag for team".
-    role: str = Field(..., pattern="^(FARMER|BUYER)$")
-    location: str
+    # ADMIN still excluded from public self-registration (unchanged decision).
+    # Lowercase to match M3's DB CHECK constraint exactly (role IN ('farmer','buyer','admin')).
+    role: str = Field(..., pattern="^(farmer|buyer)$")
+    language_pref: str = Field("en", pattern="^(en|hi)$")
+    # API field names stay friendly (latitude/longitude); mapped internally
+    # to M3's location_lat/location_lng columns. NOTE: M3's schema has no
+    # free-text "location" column at all - only these two floats.
     latitude: Optional[float] = Field(None, ge=-90, le=90)
     longitude: Optional[float] = Field(None, ge=-180, le=180)
 
@@ -25,20 +26,19 @@ class UserLogin(BaseModel):
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    user_id: int
+    id: uuid.UUID
     name: str
     phone: str
     role: str
-    location: str
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
+    language_pref: Optional[str] = None
+    latitude: Optional[float] = Field(None, validation_alias="location_lat")
+    longitude: Optional[float] = Field(None, validation_alias="location_lng")
 
 
 class UserUpdate(BaseModel):
-    """For PUT /api/users/me. Deliberately excludes phone/password/role -
-    those need their own dedicated, more careful flows (not in tonight's scope)."""
+    """For PUT /api/users/me. Excludes phone/password/role (own dedicated flows)."""
     name: Optional[str] = None
-    location: Optional[str] = None
+    language_pref: Optional[str] = Field(None, pattern="^(en|hi)$")
     latitude: Optional[float] = Field(None, ge=-90, le=90)
     longitude: Optional[float] = Field(None, ge=-180, le=180)
 

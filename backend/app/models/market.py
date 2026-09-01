@@ -1,18 +1,17 @@
-from sqlalchemy import Column, Integer, String, Numeric, DateTime, func, Index
+import uuid
+from sqlalchemy import Column, String, Float
 from app.core.database import Base
+from app.core.types import GUID
 
 
 class Market(Base):
-    """Matches FarmForward_Database_Schema section 2.5"""
+    """Matches M3's schema.sql exactly: markets table. No created_at column -
+    M3's real DDL doesn't have one."""
     __tablename__ = "markets"
 
-    market_id = Column(Integer, primary_key=True, autoincrement=True)
-    market_name = Column(String(150), nullable=False)
-    location = Column(String(255), nullable=False, index=True)
-    latitude = Column(Numeric(10, 7), nullable=True)
-    longitude = Column(Numeric(10, 7), nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    __table_args__ = (
-        Index("ix_markets_lat_lng", "latitude", "longitude"),
-    )
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    name = Column(String(150), nullable=False)
+    state = Column(String(80), nullable=True)
+    district = Column(String(80), nullable=True)
+    lat = Column(Float, nullable=True)
+    lng = Column(Float, nullable=True)

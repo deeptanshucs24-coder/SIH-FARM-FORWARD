@@ -9,13 +9,11 @@ from app.core.config import settings
 from app.core.database import Base, engine
 from app.routers import auth, users, crops, produce, market_prices, predict, recommend, buyers, profit
 
-# Import every model so SQLAlchemy's metadata knows about all tables
-# before create_all runs. Order doesn't matter for the import itself,
-# but FK targets must exist as classes by the time create_all is called.
+# Import every model so SQLAlchemy's metadata knows about all 7 tables
+# (matching M3's schema.sql exactly) before create_all runs.
 from app.models import (  # noqa: F401
-    user, crop, farmer_produce, market, market_price,
-    buyer, buyer_requirement, price_prediction, transport_rate,
-    recommendation, notification,
+    user, market, crop_listing, market_price, price_prediction,
+    buyer_requirement, match,
 )
 
 logger = logging.getLogger("farmforward")
@@ -23,16 +21,20 @@ logger = logging.getLogger("farmforward")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # MVP-speed: create tables directly instead of Alembic migrations.
-    # Move to Alembic once the schema stabilizes post-integration.
+    # checkfirst=True (SQLAlchemy's default) means this NEVER touches tables
+    # that already exist. On Postgres, M3's schema.sql is authoritative and
+    # should be run first - this is a safety net, not a competing source of
+    # truth. It only matters in practice for SQLite local/test runs, where
+    # nothing else creates the tables.
     Base.metadata.create_all(bind=engine)
     yield
 
 
 app = FastAPI(
     title="FarmForward API",
-    description="Backend for Farmer Market Linkage & Price Discovery (SIH26132)",
-    version="0.4.0",
+    description="Backend for Farmer Market Linkage & Price Discovery (SIH26132) - "
+                "aligned with M3's actual PostgreSQL schema (feature/m3-database).",
+    version="1.0.0",
     lifespan=lifespan,
 )
 
@@ -47,12 +49,10 @@ app.add_middleware(
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
-    """Centralized catch-all: any error we didn't explicitly handle (a bug, a
-    database hiccup, etc) gets logged server-side with full detail, but the
-    client only ever sees a generic message - never a raw traceback or
-    internal implementation detail. Expected, meaningful errors (404/403/409/
-    422/etc raised deliberately via HTTPException) are untouched by this and
-    still return their normal specific messages."""
+    """Any error we didn't explicitly handle gets logged server-side with
+    full detail, but the client only ever sees a generic message - never a
+    raw traceback or internal/database detail. Deliberate errors (404/403/
+    409/422/etc via HTTPException) are untouched by this."""
     logger.exception("Unhandled error on %s %s", request.method, request.url.path)
     return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 

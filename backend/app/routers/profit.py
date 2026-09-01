@@ -10,11 +10,11 @@ router = APIRouter(prefix="/api", tags=["Profit Calculator"])
     "/calculate-profit",
     response_model=ProfitCalculationResponse,
     summary="Calculate expected revenue and net profit",
-    description="Matches TRD FR7: Net Profit = Expected Revenue - Transport Cost - "
-                "Other Cost. Stateless - no DB write, no auth required, so the "
-                "frontend can call it live while the farmer is still typing numbers. "
-                "transport_cost is an input here, not computed - the final transport "
-                "formula is still a pending team decision (see README).",
+    description="Matches TRD FR7: Net Profit = Expected Revenue - Transport "
+                "Cost - Other Cost. Stateless, unit-agnostic (pure "
+                "selling_price x quantity - no kg/quintal conversion here), "
+                "no auth required. transport_cost is an input, not computed - "
+                "the final transport formula is still a pending team decision.",
 )
 def profit(payload: ProfitCalculationRequest):
     result = calculate_profit(

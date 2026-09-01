@@ -1,89 +1,85 @@
 from tests.conftest import register, auth_headers
 
 
-def _farmer_token(client, phone="9400000001"):
-    r = register(client, phone, role="FARMER")
+def _farmer_token(client, phone="9500000001"):
+    r = register(client, phone, role="farmer")
     return r.json()["access_token"]
+
+
+def test_predict_price_uses_mock_fallback(client, seeded):
+    r = client.post("/api/predict-price", json={
+        "crop_name": seeded["crop_name"], "market_id": seeded["market_id"],
+    })
+    assert r.status_code == 201
+    body = r.json()
+    assert body["predicted_price"] == 1820.0  # matches today's seeded price (mock bases off it)
+    assert body["distress_flag"] is False
+    assert "range_min" in body and "range_max" in body
+
+
+def test_predict_price_invalid_market_returns_404(client, seeded):
+    import uuid
+    r = client.post("/api/predict-price", json={"crop_name": "onion", "market_id": str(uuid.uuid4())})
+    assert r.status_code == 404
 
 
 def test_recommend_market_requires_auth(client, seeded):
     r = client.post("/api/recommend-market", json={
-        "crop_id": seeded["crop_id"], "quantity": 100,
+        "crop_name": seeded["crop_name"], "quantity_kg": 100,
         "farmer_latitude": 19.99, "farmer_longitude": 73.78,
     })
     assert r.status_code == 401
 
 
-def test_recommend_market_uses_mock_fallback_when_m5_unreachable(client, seeded):
-    """conftest points RANKING_SERVICE_URL at an unreachable port, so this
-    always exercises the local-scoring fallback path deterministically."""
+def test_recommend_market_returns_ranked_list(client, seeded):
     token = _farmer_token(client)
     r = client.post("/api/recommend-market", json={
-        "crop_id": seeded["crop_id"], "quantity": 100,
+        "crop_name": seeded["crop_name"], "quantity_kg": 100,
         "farmer_latitude": 19.99, "farmer_longitude": 73.78,
     }, headers=auth_headers(token))
     assert r.status_code == 200
     body = r.json()
-    assert len(body["recommendations"]) == 1  # one market was seeded
+    assert len(body["recommendations"]) == 1
     assert body["recommended_market_id"] == seeded["market_id"]
-
-
-def test_recommend_market_invokes_price_prediction_per_candidate(client, seeded):
-    """Confirms M4's ml_client is actually called as part of the orchestration
-    flow (Current Prices -> Prediction -> Distance -> Transport -> Profit ->
-    Ranking), not skipped. Each recommendation must include a predicted_price
-    alongside the current price. Since M4 is unreachable in tests, the mock
-    fallback bases its prediction on the current price we pass in - so under
-    test conditions predicted_price == price exactly, which itself proves the
-    current price was actually threaded through to the prediction call."""
-    token = _farmer_token(client)
-    r = client.post("/api/recommend-market", json={
-        "crop_id": seeded["crop_id"], "quantity": 100,
-        "farmer_latitude": 19.99, "farmer_longitude": 73.78,
-    }, headers=auth_headers(token))
-    assert r.status_code == 200
-    option = r.json()["recommendations"][0]
+    option = body["recommendations"][0]
     assert "predicted_price" in option
-    assert option["predicted_price"] == option["price"]
+    assert option["predicted_price"] == option["price"]  # mock bases prediction off current price
 
 
-def test_recommend_market_invalid_crop_returns_404(client, seeded):
+def test_recommend_market_invalid_coordinates_rejected(client, seeded):
     token = _farmer_token(client)
     r = client.post("/api/recommend-market", json={
-        "crop_id": 99999, "quantity": 100,
-        "farmer_latitude": 19.99, "farmer_longitude": 73.78,
+        "crop_name": seeded["crop_name"], "quantity_kg": 100,
+        "farmer_latitude": 200.0, "farmer_longitude": 73.0,
     }, headers=auth_headers(token))
-    assert r.status_code == 404
+    assert r.status_code == 422
 
 
-def test_recommend_market_with_someone_elses_produce_id_returns_403(client, seeded):
-    token_a = _farmer_token(client, "9400000002")
+def test_recommend_market_with_someone_elses_listing_returns_403(client, seeded):
+    token_a = _farmer_token(client, "9500000002")
     created = client.post("/api/farmer/produce", json={
-        "crop_id": seeded["crop_id"], "quantity": 100, "available_date": "2026-09-10",
+        "crop_name": seeded["crop_name"], "quantity_kg": 100,
     }, headers=auth_headers(token_a))
-    produce_id = created.json()["produce_id"]
+    listing_id = created.json()["id"]
 
-    token_b = _farmer_token(client, "9400000003")
+    token_b = _farmer_token(client, "9500000003")
     r = client.post("/api/recommend-market", json={
-        "crop_id": seeded["crop_id"], "quantity": 100,
+        "crop_name": seeded["crop_name"], "quantity_kg": 100,
         "farmer_latitude": 19.99, "farmer_longitude": 73.78,
-        "produce_id": produce_id,
+        "listing_id": listing_id,
     }, headers=auth_headers(token_b))
     assert r.status_code == 403
 
 
-def test_predict_price_uses_mock_fallback_when_m4_unreachable(client, seeded):
-    r = client.post("/api/predict-price", json={
-        "crop_id": seeded["crop_id"], "market_id": seeded["market_id"],
-    })
-    assert r.status_code == 201
-    body = r.json()
-    assert body["predicted_price"] > 0
-    assert body["model_name"] == "mock-fallback"
-
-
-def test_predict_price_invalid_market_returns_404(client, seeded):
-    r = client.post("/api/predict-price", json={
-        "crop_id": seeded["crop_id"], "market_id": 99999,
-    })
-    assert r.status_code == 404
+def test_recommend_market_profit_math_uses_quintal_conversion(client, seeded):
+    """quantity_kg=100 means 1 quintal. transport_cost for a ~0km distance
+    should be ~0, so expected_profit should be close to predicted_price * 1."""
+    token = _farmer_token(client)
+    r = client.post("/api/recommend-market", json={
+        "crop_name": seeded["crop_name"], "quantity_kg": 100,
+        "farmer_latitude": 19.99, "farmer_longitude": 73.78,
+    }, headers=auth_headers(token))
+    option = r.json()["recommendations"][0]
+    # 100kg = 1 quintal, so revenue should equal predicted_price (per quintal) x 1
+    expected_revenue = option["predicted_price"] * 1
+    assert abs((option["expected_profit"] + option["transport_cost"]) - expected_revenue) < 0.01

@@ -1,39 +1,46 @@
 from tests.conftest import register, auth_headers
 
 
-def test_pending_buyer_not_shown_to_public(client):
-    """New buyers are PENDING by default and must NOT appear in the
-    farmer-facing buyer list until an admin verifies them."""
-    register(client, "9300000001", role="BUYER")
+def test_buyers_list_includes_registered_buyer(client):
+    register(client, "9400000001", role="buyer", name="Buyer One")
     r = client.get("/api/buyers")
     assert r.status_code == 200
-    assert r.json() == []  # the only buyer that exists is PENDING, so nothing shows
+    assert len(r.json()) == 1
+    assert r.json()[0]["name"] == "Buyer One"
 
 
-def test_public_cannot_use_status_filter_to_see_pending(client):
-    """Even if a client explicitly asks for verification_status=PENDING,
-    a non-admin caller must still only see VERIFIED buyers."""
-    register(client, "9300000002", role="BUYER")
-    r = client.get("/api/buyers", params={"verification_status": "PENDING"})
+def test_buyers_list_excludes_farmers(client):
+    register(client, "9400000002", role="farmer")
+    register(client, "9400000003", role="buyer")
+    r = client.get("/api/buyers")
     assert r.status_code == 200
-    assert r.json() == []
+    assert len(r.json()) == 1
 
 
-def test_buyer_can_post_requirement_even_while_pending(client, seeded):
-    """Posting a requirement isn't restricted by verification status -
-    only farmer-facing *discovery* of the buyer is (per the documented flow)."""
-    r = register(client, "9300000003", role="BUYER")
+def test_buyer_can_post_requirement(client, seeded):
+    r = register(client, "9400000004", role="buyer")
     token = r.json()["access_token"]
     r2 = client.post("/api/buyer/requirements", json={
-        "crop_id": seeded["crop_id"], "required_quantity": 100, "offered_price": 1750,
+        "crop_name": "onion", "quantity_needed_kg": 500,
     }, headers=auth_headers(token))
     assert r2.status_code == 201
+    assert r2.json()["crop_name"] == "onion"
 
 
-def test_buyer_requirement_invalid_crop_returns_404(client, seeded):
-    r = register(client, "9300000004", role="BUYER")
+def test_buyer_requirement_negative_quantity_rejected(client, seeded):
+    r = register(client, "9400000005", role="buyer")
     token = r.json()["access_token"]
     r2 = client.post("/api/buyer/requirements", json={
-        "crop_id": 99999, "required_quantity": 100,
+        "crop_name": "onion", "quantity_needed_kg": -5,
     }, headers=auth_headers(token))
-    assert r2.status_code == 404
+    assert r2.status_code == 422
+
+
+def test_buyer_requirement_without_quantity_is_optional(client, seeded):
+    """M3's schema allows quantity_needed_kg to be NULL."""
+    r = register(client, "9400000006", role="buyer")
+    token = r.json()["access_token"]
+    r2 = client.post("/api/buyer/requirements", json={"crop_name": "onion"},
+                      headers=auth_headers(token))
+    assert r2.status_code == 201
+    assert r2.json()["quantity_needed_kg"] is None

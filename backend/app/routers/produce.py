@@ -2,97 +2,158 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db, require_role, get_current_user
-from app.schemas.produce import FarmerProduceCreate, FarmerProduceUpdate, FarmerProduceOut
-from app.crud.produce import (
-    create_produce, get_produce_by_farmer, get_produce_by_id,
-    update_produce, delete_produce,
+from app.schemas.crop_listing import CropListingCreate, CropListingUpdate, CropListingOut
+from app.schemas.match import MatchOut, MatchStatusUpdate
+from app.crud.crop_listing import (
+    create_listing, get_listings_by_farmer, get_listing_by_id,
+    update_listing, delete_listing,
 )
-from app.crud.crop import get_crop_by_id
+from app.crud.match import create_match, get_matches_for_listing, get_match_by_id, update_match_status
 
-router = APIRouter(prefix="/api", tags=["Farmer Produce"])
+router = APIRouter(prefix="/api", tags=["Crop Listings"])
 
 
-def _get_owned_produce_or_403(db: Session, produce_id: int, current_user):
-    """Shared ownership check: 404 if it doesn't exist, 403 if it exists but
-    belongs to someone else. A farmer can only see/edit/delete THEIR OWN
-    produce - ownership is always derived from the JWT, never from a
-    client-supplied farmer_id."""
-    produce = get_produce_by_id(db, produce_id)
-    if not produce:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Produce listing not found")
-    if produce.farmer_id != current_user.user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this produce listing")
-    return produce
+def _get_owned_listing_or_403(db: Session, listing_id, current_user):
+    """404 if it doesn't exist, 403 if it exists but belongs to someone
+    else. Ownership always comes from the JWT, never a client-supplied id."""
+    listing = get_listing_by_id(db, listing_id)
+    if not listing:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Crop listing not found")
+    if listing.farmer_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this crop listing")
+    return listing
 
 
 @router.post(
     "/farmer/produce",
-    response_model=FarmerProduceOut,
+    response_model=CropListingOut,
     status_code=status.HTTP_201_CREATED,
-    summary="Create a produce listing (FARMER only)",
+    summary="Create a crop listing (farmer only)",
 )
-def add_produce(
-    payload: FarmerProduceCreate,
+def add_listing(
+    payload: CropListingCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(require_role("FARMER")),
+    current_user=Depends(require_role("farmer")),
 ):
-    if not get_crop_by_id(db, payload.crop_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Crop not found")
-    return create_produce(db, current_user.user_id, payload)
+    return create_listing(db, current_user.id, payload)
 
 
 @router.get(
     "/farmer/produce",
-    response_model=list[FarmerProduceOut],
-    summary="List your own produce listings (FARMER only)",
-    description="Always the current farmer's own listings - identity comes from the JWT.",
+    response_model=list[CropListingOut],
+    summary="List your own crop listings (farmer only)",
 )
-def list_my_produce(
+def list_my_listings(
     db: Session = Depends(get_db),
-    current_user=Depends(require_role("FARMER")),
+    current_user=Depends(require_role("farmer")),
 ):
-    return get_produce_by_farmer(db, current_user.user_id)
+    return get_listings_by_farmer(db, current_user.id)
 
 
 @router.get(
-    "/farmer/produce/{produce_id}",
-    response_model=FarmerProduceOut,
-    summary="Read one of your own produce listings",
-    description="404 if it doesn't exist, 403 if it exists but belongs to someone else.",
+    "/farmer/produce/{listing_id}",
+    response_model=CropListingOut,
+    summary="Read one of your own crop listings",
 )
-def get_my_produce(
-    produce_id: int,
+def get_my_listing(
+    listing_id: str,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    return _get_owned_produce_or_403(db, produce_id, current_user)
+    return _get_owned_listing_or_403(db, listing_id, current_user)
 
 
 @router.patch(
-    "/farmer/produce/{produce_id}",
-    response_model=FarmerProduceOut,
-    summary="Partially update one of your own produce listings",
+    "/farmer/produce/{listing_id}",
+    response_model=CropListingOut,
+    summary="Partially update one of your own crop listings",
 )
-def update_my_produce(
-    produce_id: int,
-    payload: FarmerProduceUpdate,
+def update_my_listing(
+    listing_id: str,
+    payload: CropListingUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(require_role("FARMER")),
+    current_user=Depends(require_role("farmer")),
 ):
-    produce = _get_owned_produce_or_403(db, produce_id, current_user)
-    return update_produce(db, produce, payload)
+    listing = _get_owned_listing_or_403(db, listing_id, current_user)
+    return update_listing(db, listing, payload)
 
 
 @router.delete(
-    "/farmer/produce/{produce_id}",
+    "/farmer/produce/{listing_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete one of your own produce listings",
+    summary="Delete one of your own crop listings",
 )
-def delete_my_produce(
-    produce_id: int,
+def delete_my_listing(
+    listing_id: str,
     db: Session = Depends(get_db),
-    current_user=Depends(require_role("FARMER")),
+    current_user=Depends(require_role("farmer")),
 ):
-    produce = _get_owned_produce_or_403(db, produce_id, current_user)
-    delete_produce(db, produce)
+    listing = _get_owned_listing_or_403(db, listing_id, current_user)
+    delete_listing(db, listing)
     return None
+
+
+# --- Buyer interest / matches (backs M3's `matches` table) ---
+# Documented flow (Master Plan): Listed -> Buyer Interested -> Deal Confirmed
+
+@router.post(
+    "/farmer/produce/{listing_id}/interest",
+    response_model=MatchOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Buyer expresses interest in a listing (buyer only)",
+    description="Creates a match (status=pending). If the listing is currently "
+                "'listed', its status is bumped to 'interested'.",
+)
+def express_interest(
+    listing_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_role("buyer")),
+):
+    listing = get_listing_by_id(db, listing_id)
+    if not listing:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Crop listing not found")
+
+    match = create_match(db, listing_id=listing.id, buyer_id=current_user.id)
+    if listing.status == "listed":
+        listing.status = "interested"
+        db.commit()
+    return match
+
+
+@router.get(
+    "/farmer/produce/{listing_id}/matches",
+    response_model=list[MatchOut],
+    summary="View interested buyers for one of your own listings (farmer only)",
+)
+def list_listing_matches(
+    listing_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_role("farmer")),
+):
+    listing = _get_owned_listing_or_403(db, listing_id, current_user)
+    return get_matches_for_listing(db, listing.id)
+
+
+@router.patch(
+    "/farmer/produce/{listing_id}/matches/{match_id}",
+    response_model=MatchOut,
+    summary="Accept or reject a buyer's interest (farmer, owner only)",
+    description="Accepting also sets the listing's status to 'confirmed'.",
+)
+def update_match(
+    listing_id: str,
+    match_id: str,
+    payload: MatchStatusUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_role("farmer")),
+):
+    listing = _get_owned_listing_or_403(db, listing_id, current_user)
+    match = get_match_by_id(db, match_id)
+    if not match or str(match.listing_id) != str(listing.id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Match not found for this listing")
+
+    updated = update_match_status(db, match, payload.status)
+    if payload.status == "accepted":
+        listing.status = "confirmed"
+        db.commit()
+    return updated

@@ -18,7 +18,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_access_token(subject: str, extra_claims: Optional[dict] = None) -> str:
-    """subject is the user's id (as a string)."""
+    """subject is the user's id (UUID, as a string)."""
     to_encode = {"sub": subject}
     if extra_claims:
         to_encode.update(extra_claims)

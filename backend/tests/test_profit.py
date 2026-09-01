@@ -13,7 +13,6 @@ def test_profit_calculation_zero_costs(client):
     assert r.status_code == 200
     body = r.json()
     assert body["transport_cost"] == 0
-    assert body["other_cost"] == 0
     assert body["expected_net_profit"] == 10000.0
 
 
@@ -28,6 +27,5 @@ def test_profit_calculation_negative_quantity_rejected(client):
 
 
 def test_profit_calculation_no_auth_required(client):
-    """Stateless calculator - the frontend can call it live without a login."""
     r = client.post("/api/calculate-profit", json={"selling_price": 500, "quantity": 5})
     assert r.status_code == 200

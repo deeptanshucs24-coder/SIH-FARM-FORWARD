@@ -1,19 +1,22 @@
-from sqlalchemy import Column, Integer, ForeignKey, Numeric, String, Date, DateTime, func
+import uuid
+from sqlalchemy import Column, String, Float, Boolean, DateTime, ForeignKey, func
 from app.core.database import Base
+from app.core.types import GUID
 
 
 class PricePrediction(Base):
-    """Matches FarmForward_Database_Schema section 2.9"""
+    """Matches M3's schema.sql exactly: price_predictions table.
+    Field names (predicted_price, range_min, range_max, confidence,
+    distress_flag) match the Master Plan's Part 4.1 M4 output example
+    exactly - this IS the documented M4 contract, not a guess."""
     __tablename__ = "price_predictions"
 
-    prediction_id = Column(Integer, primary_key=True, autoincrement=True)
-    crop_id = Column(Integer, ForeignKey("crops.crop_id"), nullable=False, index=True)
-    market_id = Column(Integer, ForeignKey("markets.market_id"), nullable=False, index=True)
-    prediction_date = Column(Date, nullable=False)
-    target_date = Column(Date, nullable=False)
-    predicted_price = Column(Numeric(12, 2), nullable=False)
-    predicted_min_price = Column(Numeric(12, 2), nullable=True)
-    predicted_max_price = Column(Numeric(12, 2), nullable=True)
-    trend = Column(String(20), nullable=True)  # INCREASING / DECREASING / STABLE
-    model_name = Column(String(80), nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    crop_name = Column(String(80), nullable=False, index=True)
+    market_id = Column(GUID(), ForeignKey("markets.id", ondelete="CASCADE"), nullable=True, index=True)
+    predicted_price = Column(Float, nullable=True)
+    range_min = Column(Float, nullable=True)
+    range_max = Column(Float, nullable=True)
+    confidence = Column(Float, nullable=True)
+    distress_flag = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime, server_default=func.now())

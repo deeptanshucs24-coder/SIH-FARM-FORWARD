@@ -1,24 +1,25 @@
+import uuid
 import datetime
 from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PredictPriceRequest(BaseModel):
-    crop_id: int
-    market_id: int
-    target_date: Optional[datetime.date] = None  # defaults to today+1 if omitted
+    crop_name: str = Field(..., min_length=1, max_length=80)
+    market_id: uuid.UUID
+    target_date: Optional[datetime.date] = None  # defaults to +7 days if omitted
 
 
 class PricePredictionOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
+    """Field names match M3's price_predictions table AND the Master Plan's
+    Part 4.1 M4 output example exactly - this is the documented contract."""
+    model_config = ConfigDict(from_attributes=True)
 
-    prediction_id: int
-    crop_id: int
-    market_id: int
-    prediction_date: datetime.date
-    target_date: datetime.date
-    predicted_price: float
-    predicted_min_price: Optional[float] = None
-    predicted_max_price: Optional[float] = None
-    trend: Optional[str] = None
-    model_name: Optional[str] = None
+    id: uuid.UUID
+    crop_name: str
+    market_id: Optional[uuid.UUID] = None
+    predicted_price: Optional[float] = None
+    range_min: Optional[float] = None
+    range_max: Optional[float] = None
+    confidence: Optional[float] = None
+    distress_flag: bool

@@ -1,257 +1,245 @@
 # FarmForward Backend (Member 2 — Core API)
 
 FastAPI backend for SIH26132 — Farmer Market Linkage & Price Discovery.
-Matches the team's official `FarmForward_Database_Schema` and TRD (11-table schema).
 
-**Status: M2 baseline complete for tonight.** Everything under M2's
-responsibility that can be finished without M3/M4/M5/M6/team decisions is
-done, tested, and ready for `feature/m2-backend`. **63/63 tests passing.**
-Pending items are listed under "Flag for team" below - intentionally left
-as placeholders per tonight's scope.
+**This version is aligned with M3's ACTUAL implemented database schema**
+(`feature/m3-database`, `database/schema.sql`) — PostgreSQL, UUID primary
+keys, 7 tables: `users`, `markets`, `crop_listings`, `market_prices`,
+`price_predictions`, `buyers_requirements`, `matches`.
+
+This is a genuine architecture change from the previous round, not a
+rename. The earlier version was built against a different schema
+interpretation (integer IDs, a separate `crops` reference table, a separate
+`buyers` table with verification status). None of that exists in M3's real
+schema. Everything below was rebuilt from the API layer down to the
+database layer to match M3's actual DDL exactly.
+
+**Status: 65/65 tests passing — verified against BOTH SQLite (fast local
+dev) AND a real, locally-installed PostgreSQL instance running M3's actual
+`schema.sql` unmodified.** This isn't a claim - see "How this was tested"
+below for exactly what was run.
 
 ## Owns
-- Auth (register/login, JWT, role-based access: FARMER / BUYER, ADMIN handled separately)
+- Auth (register/login, JWT, role-based: farmer/buyer, admin handled separately)
 - Own-profile endpoints (`/api/users/me`)
-- Farmer produce CRUD, strictly ownership-scoped via JWT
-- Market price read endpoints (current + historical - correctly distinct)
-- Buyer listing (verification-gated) + buyer requirements
+- Crop listing CRUD (`crop_listings` table), strictly ownership-scoped via JWT
+- Buyer-interest / matches flow (`matches` table) - new this round, see below
+- Market price read endpoints (current + historical, crop_name-based)
+- Buyer listing + buyer requirements (`buyers_requirements` table)
 - Orchestration: `/api/predict-price` (calls M4) and `/api/recommend-market`
   (calls M5, falls back to local scoring), plus a stateless `/api/calculate-profit`
-- Input validation (phone format, coordinate bounds, quantities/prices, dates, IDs)
-- Centralized error handling (no raw tracebacks/DB errors ever reach the client)
 
 ## Setup
+
+### Option A — against a real Postgres instance (recommended, matches production)
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-cp .env.example .env              # edit DATABASE_URL, JWT_SECRET_KEY, etc.
+# 1. Make sure M3's schema is loaded first (see their data/README_M3.md):
+#    psql -U postgres -c "CREATE DATABASE mandisetu;"
+#    psql -U postgres -d mandisetu -f database/schema.sql
+# 2. Then:
+cp .env.example .env              # DATABASE_URL already matches M3's convention
 uvicorn app.main:app --reload --port 8000
 ```
 
-Swagger UI: http://localhost:8000/docs
-Health check: http://localhost:8000/health
+### Option B — SQLite, for quick local iteration without Postgres installed
 
-## Local testing without Postgres
+```bash
+# same venv/install steps, then:
+cp .env.example .env
+# edit .env: DATABASE_URL=sqlite:///./test.db
+uvicorn app.main:app --reload --port 8000
+```
 
-Set `DATABASE_URL=sqlite:///./test.db` in `.env`. Tables auto-create on
-startup. Then seed some demo data:
+Either way: Swagger UI at http://localhost:8000/docs, health check at
+http://localhost:8000/health.
+
+## Local testing / demo data
 
 ```bash
 python3 -m scripts.seed_demo_data
 ```
 
-Adds 2 crops, 2 markets, and 3 days of price history for Onion @ Nashik -
-enough to see the current-vs-historical distinction yourself:
-`GET /api/market-prices?crop_id=1&market_id=1` returns exactly 1 row
-(today's), `GET /api/market-prices/history?crop_id=1&market_id=1` returns
-all 3.
+This mirrors M3's own `data/seed_demo_data.sql` **exactly** - same 4
+markets (Nashik/Pune/Lasalgaon/Mumbai Vashi), same fixed UUIDs, same
+farmer (Ramesh Patil)/buyer (Sunil Traders)/admin (Agri Officer), same
+7-day onion price history. Demo login: phone `9990000001` / password
+`demo1234` (farmer).
 
-## Running the test suite
-
-```bash
-python3 -m pytest tests/ -v
-```
-
-**63/63 tests passing**, across 12 test files. Covers: authentication,
-authorization/ownership, full produce CRUD, current-vs-historical prices,
-profit calculation, buyer verification gating, both orchestration endpoints'
-mock-fallback behavior, health check, crops listing, input validation (phone
-format, lat/lng bounds, invalid IDs, malformed/impossible dates, missing
-fields, negative quantities), and the centralized error handler.
-
-Tests use an isolated file-based SQLite database, wiped and rebuilt before
-every test function. `ML_SERVICE_URL`/`RANKING_SERVICE_URL` point at
-unreachable ports during tests on purpose, so the mock-fallback path runs
-deterministically without needing real M4/M5 services.
-
-**Warnings:** 32, all from third-party libraries (`passlib`'s use of Python's
-deprecated `crypt` module, `python-jose`'s use of deprecated
-`datetime.utcnow()`) - none from our code.
+**Bug found in M3's own seed file:** `data/seed_demo_data.sql`'s comment
+says the bcrypt hash corresponds to password `demo1234`, but it doesn't -
+independently verified with `passlib.verify()`, it matches neither
+`demo1234` nor several other common test passwords. Logging in with M3's
+raw SQL-seeded data and that documented password will fail. **Worth
+flagging to M3** - not something I changed in their file. Our own
+`scripts/seed_demo_data.py` computes a correct hash, so login works if you
+seed via this Python script instead.
 
 ## Creating an admin account
-
-Public registration only allows `FARMER`/`BUYER`. To create an admin:
 
 ```bash
 python3 -m scripts.create_admin
 ```
 
-Interactive prompt, bypasses the public API's role restriction entirely by
-writing directly to the database.
+Public registration only allows `farmer`/`buyer` - same reasoning as
+before, unchanged this round.
 
-## Talking to M4 / M5 before they're ready
+## How this was tested (not just claimed)
 
-`app/services/ml_client.py` calls `ML_SERVICE_URL/predict`.
-`app/services/ranking_client.py` calls `RANKING_SERVICE_URL/rank`.
-Both fall back automatically if unreachable. The fallback logic is cleanly
-separated from the orchestration routers (`predict.py`, `recommend.py`) -
-swapping in real contracts should only touch these two client files.
+1. Installed PostgreSQL 16 locally, created a `mandisetu` database, and ran
+   M3's actual `database/schema.sql` **completely unmodified**.
+2. Ran M3's actual `data/seed_demo_data.sql` **completely unmodified**.
+3. Started this backend against that real database and ran a full manual
+   flow: register, login, create a crop listing, view current market prices
+   (matching M3's exact seeded numbers), get a market recommendation
+   (verified the distance/profit ranking makes geographic sense against the
+   real Nashik/Pune/Lasalgaon/Mumbai coordinates), buyer expresses interest,
+   farmer accepts it, listing status correctly flows
+   listed → interested → confirmed, buyer posts a requirement, price
+   prediction persists correctly.
+4. Verified directly via `psql` that the data written by the API actually
+   landed correctly in M3's real tables.
+5. Verified Postgres's own CHECK constraints reject bad data even if
+   Pydantic validation were bypassed entirely (tested by inserting directly
+   via SQLAlchemy, skipping the API layer) - confirms the DB itself is a
+   real last line of defense, not just decoration.
+6. Ran the full 65-test pytest suite against SQLite (fast local iteration).
+7. Ran the **exact same 65-test suite again with `DATABASE_URL` pointed at
+   the real Postgres instance** running M3's schema - all 65 passed there
+   too, with zero test changes needed.
+8. Compiled every `.py` file, confirmed all 21 API routes register, copied
+   to a fresh folder and reinstalled from `requirements.txt` from scratch.
 
----
+## Major differences from the previous round (read this before reviewing)
 
-## Changes made tonight — final adjustment (on top of the previous baseline)
+This is a full schema realignment, not a patch. Every one of these is a
+consequence of M3's actual DDL, not a preference:
 
-**The one change requested:** the documented flow puts price prediction
-*before* distance/transport/profit/ranking
-(`Current Prices -> Prediction -> Distance -> Transport -> Profit -> Ranking`),
-but `recommend-market` was skipping the prediction step entirely and computing
-profit straight off today's current price. Fixed:
+| Concept | Previous round | This round (matches M3) |
+|---|---|---|
+| Primary keys | Integer, auto-increment | **UUID**, `gen_random_uuid()` |
+| Crop reference | Separate `crops` table, `crop_id` FK | **No crops table** - `crop_name` is free text everywhere |
+| Farmer listings | `farmer_produce` table | **`crop_listings`** table (also has `grade`, `status` fields that didn't exist before) |
+| Market prices | `min_price`/`max_price`/`average_price` | **Single `price_per_quintal`** value |
+| Buyers | Separate `buyers` table w/ `verification_status` (PENDING/VERIFIED/REJECTED) | **No separate buyers table at all** - a buyer IS a `users` row with `role='buyer'`. **No verification concept exists anywhere in the schema.** |
+| Roles | Uppercase (`FARMER`/`BUYER`/`ADMIN`) | **Lowercase** (`farmer`/`buyer`/`admin`) - matches DB CHECK constraint exactly |
+| Recommendation persistence | Saved to a `recommendations` table | **No such table exists** - `recommend-market` is now purely computational, nothing persisted |
+| Buyer-farmer interest | Didn't exist | **New**: `matches` table + `/interest`, `/matches` endpoints (this table existed in M3's schema with no owner before) |
+| `location` (free text) | A field on `users` | **Doesn't exist** - only `location_lat`/`location_lng` floats |
+| `expected_price` on produce | Existed | **Doesn't exist** in M3's `crop_listings` table - dropped |
 
-- `recommend-market` now calls the existing `ml_client.predict_price()`
-  (M4's abstraction, same mock-fallback as `/api/predict-price` uses) for
-  every candidate market, in parallel, before computing distance/transport/profit.
-- Distance/transport/profit/ranking are now computed from the **predicted**
-  price, not the raw current price. Today's current price is still returned
-  alongside it (`price` field) for context/explainability.
-- `MarketOption` response schema gained a `predicted_price` field.
-- The recommendation saved to the DB now stores the predicted price as
-  `expected_price`, not the current price.
-- No M4 contract was invented or finalized - this only wires the *existing*
-  client/mock abstraction into the flow, exactly as asked.
-- **1 new test** (63 total) specifically proving the prediction step is
-  actually invoked and threaded through correctly, not just present in code.
+## Flag for team — please confirm
 
-Nothing else touched. `buyers.user_id`, M4/M5 contracts, M6 transport/distance,
-PATCH vs PUT, and the admin workflow remain exactly as pending team decisions.
-
-## Changes from the round before that
-
-1. **Phone number format validation** - `UserRegister.phone` now requires
-   10-15 digits only (was previously any string of that length).
-2. **Latitude/longitude bounds** - added `-90 to 90` / `-180 to 180`
-   validation to `UserRegister`, `UserUpdate`, and `RecommendMarketRequest`.
-3. **`market_id` existence check** added to both `GET /api/market-prices`
-   and `GET /api/market-prices/history` (previously only `crop_id` was
-   checked; an invalid `market_id` silently returned an empty list instead
-   of a clear 404).
-4. **Centralized error handling** - a catch-all exception handler in
-   `main.py` now logs full details server-side but only ever returns a
-   generic `{"detail": "Internal server error"}` to the client for anything
-   unexpected. Existing deliberate errors (404/403/409/422/etc) are
-   untouched.
-5. **API documentation improved** across `auth.py`, `crops.py`,
-   `produce.py`, `market_prices.py`, `profit.py` - added `summary`/
-   `description` to every endpoint so `/docs` is self-explanatory for M1.
-6. **17 new tests** (45 → 62 → 63): `test_health.py`, `test_crops.py`,
-   `test_error_handling.py`, and `test_validation.py` (phone format,
-   coordinate bounds, invalid market IDs, malformed/impossible dates,
-   missing required fields, negative quantities).
-7. Switched `@app.on_event("startup")` to FastAPI's `lifespan` pattern
-   (carried over from last round, confirmed still clean this round).
-
-## Flag for team — please confirm tomorrow
-
-Unchanged from the previous round, per tonight's instructions not to
-finalize these:
-
-1. **Admin creation workflow.** Currently `scripts/create_admin.py` only -
-   needs a real team decision (invite-only endpoint? bootstrap-only? manual
-   DB access?).
-2. **`buyers.user_id → users.user_id` link.** Present exactly as before - a
-   buyer's account auto-links to a `buyers` row on registration. **Not** in
-   the official schema doc, needs M3/team sign-off. See
-   `app/models/buyer.py` and `app/crud/user.py`.
-3. **Transport/distance calculation.** Still a placeholder (haversine +
+1. **Buyer verification is completely unimplemented at the DB level.**
+   The PRD's documented flow (Buyer Registration → PENDING → Admin Review →
+   VERIFIED → eligible for farmer-facing linkage) has **no supporting
+   column anywhere** in M3's actual schema - not on `users`, not anywhere
+   else. `GET /api/buyers` currently returns every buyer, unfiltered. If the
+   team wants verification enforced, that requires M3 to add a column
+   (e.g. `users.verification_status` or similar) - this is a schema change,
+   not something I can safely invent.
+2. **`GET /api/crops` is now derived dynamically**, not read from a
+   reference table (none exists). It returns the distinct `crop_name`
+   values currently present across `market_prices` and `crop_listings`.
+   Reasonable adaptation, but flagging since it's an interpretive choice,
+   not something either document explicitly specifies.
+3. **Recommendation history is no longer persisted anywhere** - the
+   `recommendations` table from the previous round doesn't exist in M3's
+   schema, and the Master Plan's Part 10 schema (which M3 implemented)
+   never included one either. If the team wants recommendation history
+   tracked, that's a new table M3 would need to add.
+4. **M3's `data/seed_demo_data.sql` has an incorrect password hash** (see
+   above) - worth a quick fix on M3's side.
+5. **Transport/distance calculation** - still a placeholder (haversine +
    flat rate) in `app/services/transport.py`. Needs M6's real
-   formula/provider.
-4. **M4 prediction contract.** Mock fallback unchanged in
-   `app/services/ml_client.py`, ready to swap once M4 shares their contract.
-5. **M5 ranking contract.** Same, in `app/services/ranking_client.py`.
-6. **PATCH vs. PUT for produce updates.** Used PATCH since updates are
-   partial - confirm this matches what M1 expects.
-7. **`notifications` and `transport_rates` tables** still have no
-   endpoints - intentionally out of scope for the MVP.
+   formula/provider. Unchanged from previous rounds.
+6. **M4 prediction contract** - M4's actual service (`ml/app.py` in M3's
+   branch) is currently an empty stub, so the mock fallback is still in
+   use. Its shape now matches the Master Plan's Part 4.1 example exactly
+   (`predicted_price`/`range_min`/`range_max`/`confidence`/`distress_flag`),
+   since that's both the documented contract AND M3's actual
+   `price_predictions` table columns - not a guess.
+7. **M5 ranking contract** - M5's service doesn't exist yet either; local
+   fallback scoring unchanged in spirit from previous rounds.
+8. **PATCH vs PUT** for listing updates - used PATCH (partial update),
+   consistent with previous rounds' decision.
 
 ## Endpoints
 
-| Method | Path                                | Auth              | Purpose |
-|--------|--------------------------------------|-------------------|---------|
-| POST   | /api/register                       | -                 | Register farmer/buyer (NOT admin) |
-| POST   | /api/login                          | -                 | Login, returns JWT |
-| GET    | /api/users/me                       | any               | Get your own profile |
-| PUT    | /api/users/me                       | any               | Update your own profile |
-| GET    | /api/crops                          | -                 | List all crops |
-| POST   | /api/farmer/produce                 | FARMER            | Create a produce listing |
-| GET    | /api/farmer/produce                 | FARMER            | List your own produce |
-| GET    | /api/farmer/produce/{produce_id}    | owner only        | Read one listing |
-| PATCH  | /api/farmer/produce/{produce_id}    | owner only        | Update one listing |
-| DELETE | /api/farmer/produce/{produce_id}    | owner only        | Delete one listing |
-| GET    | /api/market-prices?crop_id=&market_id= | -              | Current price per market (latest date only) |
-| GET    | /api/market-prices/history?crop_id=&days= | -           | Historical price series |
-| POST   | /api/predict-price                  | -                 | Get + store a fair-price prediction (calls M4) |
-| POST   | /api/recommend-market                | FARMER            | Ranked market list with profit breakdown (calls M5) |
-| GET    | /api/buyers?verification_status=    | optional (admin sees all) | List buyers (non-admin: VERIFIED only) |
-| POST   | /api/buyer/requirements             | BUYER             | Buyer posts a crop requirement |
-| POST   | /api/calculate-profit               | -                 | Stateless revenue/profit calculator |
-| GET    | /health                             | -                 | Health check |
-
-Full request/response schemas, validation rules, and auth requirements are
-auto-documented at `/docs`.
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| POST | /api/register | - | Register farmer/buyer (not admin) |
+| POST | /api/login | - | Login, returns JWT |
+| GET | /api/users/me | any | Get your own profile |
+| PUT | /api/users/me | any | Update your own profile |
+| GET | /api/crops | - | Distinct crop names currently in the system |
+| POST | /api/farmer/produce | farmer | Create a crop listing |
+| GET | /api/farmer/produce | farmer | List your own listings |
+| GET | /api/farmer/produce/{id} | owner only | Read one listing |
+| PATCH | /api/farmer/produce/{id} | owner only | Update one listing |
+| DELETE | /api/farmer/produce/{id} | owner only | Delete one listing |
+| POST | /api/farmer/produce/{id}/interest | buyer | Express interest (creates a match) |
+| GET | /api/farmer/produce/{id}/matches | owner only | View interested buyers |
+| PATCH | /api/farmer/produce/{id}/matches/{match_id} | owner only | Accept/reject a match |
+| GET | /api/market-prices?crop_name=&market_id= | - | Current price per market |
+| GET | /api/market-prices/history?crop_name=&market_id=&days= | - | Historical price series |
+| POST | /api/predict-price | - | Get + store a fair-price prediction (calls M4) |
+| POST | /api/recommend-market | farmer | Ranked market list (calls M5) |
+| GET | /api/buyers | - | List buyers (all - no verification filter exists) |
+| POST | /api/buyer/requirements | buyer | Post a crop requirement |
+| POST | /api/calculate-profit | - | Stateless revenue/profit calculator |
+| GET | /health | - | Health check |
 
 ## Project structure
 
 ```
 app/
-├── main.py                 # FastAPI app, router registration, lifespan startup, error handler
+├── main.py                 # FastAPI app, router registration, lifespan, error handler
 ├── core/
-│   ├── config.py            # env settings (.env)
-│   ├── database.py          # SQLAlchemy engine/session
-│   └── security.py          # JWT + bcrypt helpers
-├── models/                   # SQLAlchemy ORM models - one file per table (11 total)
-├── schemas/                   # Pydantic request/response schemas + validation
-├── crud/                       # DB access functions
+│   ├── config.py             # env settings
+│   ├── database.py           # SQLAlchemy engine/session
+│   ├── security.py           # JWT + bcrypt
+│   └── types.py               # NEW - portable UUID column type (Postgres native / SQLite fallback)
+├── models/                   # One file per M3 table (7 total) - column names match schema.sql exactly
+│   ├── user.py
+│   ├── market.py
+│   ├── crop_listing.py
+│   ├── market_price.py
+│   ├── price_prediction.py
+│   ├── buyer_requirement.py
+│   └── match.py               # NEW
+├── schemas/                    # Pydantic - crop_name/UUID/quintal-aware throughout
+├── crud/                        # DB access - one file per model, UUID-safe lookups
 ├── services/
-│   ├── ml_client.py             # calls M4's price prediction service
-│   ├── ranking_client.py        # calls M5's market ranking service
-│   └── transport.py             # distance + profit math (placeholder until M6)
-├── dependencies.py           # get_db, get_current_user, get_current_user_optional, require_role
+│   ├── ml_client.py               # M4 - now matches the real documented contract exactly
+│   ├── ranking_client.py          # M5
+│   └── transport.py               # distance + profit math (unit-conversion-aware, placeholder pending M6)
+├── dependencies.py            # get_db, get_current_user, require_role
 └── routers/
     ├── auth.py
     ├── users.py
-    ├── crops.py
-    ├── produce.py                # full CRUD, ownership-scoped
+    ├── crops.py                   # now dynamic (no reference table)
+    ├── produce.py                 # crop_listings CRUD + matches flow
     ├── market_prices.py
     ├── predict.py
-    ├── recommend.py              # orchestration endpoint
+    ├── recommend.py                # no longer persists anything (no table for it)
     ├── buyers.py
     └── profit.py
 scripts/
-├── seed_demo_data.py        # fake crops/markets/multi-day prices for local testing
-└── create_admin.py          # isolated admin-account creation
-tests/                        # 63 pytest tests, isolated DB per test
-├── conftest.py
-├── test_auth.py
-├── test_authorization.py
-├── test_produce.py
-├── test_prices.py
-├── test_profit.py
-├── test_buyers.py
-├── test_recommend.py
-├── test_users.py
-├── test_crops.py
-├── test_health.py
-├── test_validation.py
-└── test_error_handling.py
+├── seed_demo_data.py          # mirrors M3's real seed data exactly, with a correct password hash
+└── create_admin.py
+tests/                          # 65 pytest tests, verified against SQLite AND real Postgres
 ```
-
-## Database tables (matches FarmForward_Database_Schema)
-
-`users`, `crops`, `farmer_produce`, `markets`, `market_prices`, `buyers`,
-`buyer_requirements`, `price_predictions`, `transport_rates`,
-`recommendations`, `notifications`.
-
-Primary keys use `Integer` (not `BIGINT`) for SQLite-testing compatibility.
-Postgres handles this fine at hackathon scale.
 
 ## Next steps for M2
 
-- [ ] Bring the "Flag for team" list to tomorrow's discussion
-- [ ] Swap `.env` DATABASE_URL to M3's real Postgres connection string once shared
-- [ ] Confirm M4's `/predict` request/response fields match `ml_client.py`
-- [ ] Confirm M5's `/rank` request/response fields match `ranking_client.py`
-- [ ] Get real transport rate + distance logic from M6, replace placeholders in `transport.py`
-- [ ] Decide on the admin-creation workflow properly
-- [ ] Once the team confirms the above, merge into `feature/m2-backend`
+- [ ] Bring the "Flag for team" list to the discussion - especially #1 (buyer verification) and #3 (recommendation persistence), since those are schema gaps, not implementation choices
+- [ ] Tell M3 about the seed-data password hash bug
+- [ ] Confirm M4's real `/predict` contract once `ml/app.py` is built (currently an empty stub)
+- [ ] Confirm M5's real ranking contract once that service exists
+- [ ] Get real transport rate + distance logic from M6
+- [ ] Once confirmed, merge into `feature/backend`
